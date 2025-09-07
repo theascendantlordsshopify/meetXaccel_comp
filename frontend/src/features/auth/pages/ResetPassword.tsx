@@ -15,7 +15,7 @@ export default function ResetPassword() {
   const token = searchParams.get('token')
   const [showPassword, setShowPassword] = useState(false)
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
-  const { confirmPasswordReset, isPasswordResetLoading } = useAuth()
+  const { confirmPasswordReset, isPasswordResetLoading, error, clearError } = useAuth()
 
   const {
     register,
@@ -28,6 +28,11 @@ export default function ResetPassword() {
       token: token || '',
     },
   })
+
+  // Clear any previous errors when component mounts
+  React.useEffect(() => {
+    clearError()
+  }, [clearError])
 
   const password = watch('new_password')
 

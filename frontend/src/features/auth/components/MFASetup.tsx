@@ -36,7 +36,11 @@ export function MFASetup({ isOpen, onClose }: MFASetupProps) {
 
   const onSetup = async (data: MFASetupFormData) => {
     try {
-      const result = await setupMFA(data)
+      const result = await setupMFA({
+        device_type: data.device_type,
+        device_name: data.device_name,
+        phone_number: data.phone_number,
+      })
       setSetupData(result)
       setStep('verify')
     } catch (error) {
@@ -46,7 +50,9 @@ export function MFASetup({ isOpen, onClose }: MFASetupProps) {
 
   const onVerify = async (data: MFAVerificationFormData) => {
     try {
-      const result = await verifyMFASetup(data)
+      const result = await verifyMFASetup({
+        otp_code: data.otp_code,
+      })
       setSetupData(result)
       setStep('complete')
     } catch (error) {

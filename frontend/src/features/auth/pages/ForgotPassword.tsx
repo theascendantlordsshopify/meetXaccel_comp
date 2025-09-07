@@ -11,7 +11,7 @@ import { ROUTES } from '@/constants/routes'
 import { passwordResetRequestSchema, type PasswordResetRequestFormData } from '@/types/forms'
 
 export default function ForgotPassword() {
-  const { requestPasswordReset, isPasswordResetLoading } = useAuth()
+  const { requestPasswordReset, isPasswordResetLoading, error, clearError } = useAuth()
 
   const {
     register,
@@ -20,6 +20,11 @@ export default function ForgotPassword() {
   } = useForm<PasswordResetRequestFormData>({
     resolver: zodResolver(passwordResetRequestSchema),
   })
+
+  // Clear any previous errors when component mounts
+  React.useEffect(() => {
+    clearError()
+  }, [clearError])
 
   const onSubmit = (data: PasswordResetRequestFormData) => {
     requestPasswordReset(data)

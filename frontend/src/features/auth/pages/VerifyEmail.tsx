@@ -10,12 +10,17 @@ import { ROUTES } from '@/constants/routes'
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')
-  const { verifyEmail, isEmailVerificationLoading, resendVerification, user } = useAuth()
+  const { verifyEmail, isEmailVerificationLoading, resendVerification, user, clearError } = useAuth()
   const [verificationStatus, setVerificationStatus] = React.useState<'loading' | 'success' | 'error'>('loading')
+
+  // Clear any previous errors when component mounts
+  React.useEffect(() => {
+    clearError()
+  }, [clearError])
 
   useEffect(() => {
     if (token) {
-      verifyEmail(token)
+      verifyEmail({ token })
         .then(() => setVerificationStatus('success'))
         .catch(() => setVerificationStatus('error'))
     } else {

@@ -22,6 +22,7 @@ interface AuthState {
     terms_accepted: boolean
   }) => Promise<void>
   logout: () => void
+  setUser: (user: User, token: string) => void
   updateProfile: (data: Partial<Profile>) => Promise<void>
   refreshUser: () => Promise<void>
   clearError: () => void
@@ -50,18 +51,8 @@ export const authStore = create<AuthState>()(
             remember_me: rememberMe,
           })
 
-          const { user, token } = response
-
-          // Set auth token for future requests
-          setAuthToken(token)
-
-          set({
-            user,
-            token,
-            isAuthenticated: true,
-            isLoading: false,
-            error: null,
-          })
+          get().setUser(response.user, response.token)
+          set({ isLoading: false })
         } catch (error: any) {
           set({
             isLoading: false,
@@ -76,18 +67,8 @@ export const authStore = create<AuthState>()(
           set({ isLoading: true, error: null })
 
           const response = await authService.register(data)
-          const { user, token } = response
-
-          // Set auth token for future requests
-          setAuthToken(token)
-
-          set({
-            user,
-            token,
-            isAuthenticated: true,
-            isLoading: false,
-            error: null,
-          })
+          get().setUser(response.user, response.token)
+          set({ isLoading: false })
         } catch (error: any) {
           set({
             isLoading: false,
@@ -112,6 +93,18 @@ export const authStore = create<AuthState>()(
           token: null,
           isAuthenticated: false,
           isLoading: false,
+          error: null,
+        })
+      },
+
+      setUser: (user: User, token: string) => {
+        // Set auth token for future requests
+        setAuthToken(token)
+
+        set({
+          user,
+          token,
+          isAuthenticated: true,
           error: null,
         })
       },
@@ -216,6 +209,7 @@ export const useAuth = () => {
     clearError,
     setLoading,
     setError,
+    setUser,
     // Computed values
     isOrganizer: user?.is_organizer || false,
     isEmailVerified: user?.is_email_verified || false,
