@@ -108,6 +108,16 @@ export const authService = {
   verifySMSMFA: (data: { otp_code: string; device_id?: string }): Promise<{ message: string }> =>
     apiClient.post('/users/mfa/verify-sms/', data),
 
+  // MFA Login (during authentication flow)
+  sendSMSMFACode: (deviceId: string): Promise<{ message: string }> =>
+    apiClient.post('/users/mfa/send-sms-code/', { device_id: deviceId }),
+
+  verifyMFALogin: (data: { otp_code: string; device_id?: string }): Promise<{ message: string; token: string }> =>
+    apiClient.post('/users/mfa/verify/', data),
+
+  verifyBackupCode: (data: { backup_code: string }): Promise<{ message: string; token: string }> =>
+    apiClient.post('/users/mfa/verify-backup/', data),
+
   // Team Management
   getInvitations: (): Promise<Invitation[]> =>
     apiClient.get('/users/invitations/'),

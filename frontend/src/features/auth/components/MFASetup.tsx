@@ -19,8 +19,9 @@ interface MFASetupProps {
 export function MFASetup({ isOpen, onClose }: MFASetupProps) {
   const [step, setStep] = useState<'setup' | 'verify' | 'complete'>('setup')
   const [setupData, setSetupData] = useState<any>(null)
+  const [deviceType, setDeviceType] = useState<'totp' | 'sms'>('totp')
   const [copiedSecret, setCopiedSecret] = useState(false)
-  const { setupMFA, verifyMFASetup, mfaDevices } = useAuth()
+  const { setupMFA, verifyMFASetup, verifySMSMFASetup, resendSMSOTP } = useAuth()
 
   const setupForm = useForm<MFASetupFormData>({
     resolver: zodResolver(mfaSetupSchema),
@@ -36,12 +37,13 @@ export function MFASetup({ isOpen, onClose }: MFASetupProps) {
 
   const onSetup = async (data: MFASetupFormData) => {
     try {
+      setDeviceType(data.device_type as 'totp' | 'sms')
       const result = await setupMFA({
         device_type: data.device_type,
         device_name: data.device_name,
         phone_number: data.phone_number,
       })
-      setSetupData(result)
+      setSetupData({ ...result, device_type: data.device_type })
       setStep('verify')
     } catch (error) {
       console.error('MFA setup failed:', error)
@@ -50,9 +52,17 @@ export function MFASetup({ isOpen, onClose }: MFASetupProps) {
 
   const onVerify = async (data: MFAVerificationFormData) => {
     try {
-      const result = await verifyMFASetup({
-        otp_code: data.otp_code,
-      })
+      let result
+      if (deviceType === 'sms') {
+        result = await verifySMSMFASetup({
+          otp_code: data.otp_code,
+          device_id: setupData?.device_id,
+        })
+      } else {
+        result = await verifyMFASetup({
+          otp_code: data.otp_code,
+        })
+      }
       setSetupData(result)
       setStep('complete')
     } catch (error) {
@@ -73,6 +83,7 @@ export function MFASetup({ isOpen, onClose }: MFASetupProps) {
   const handleClose = () => {
     setStep('setup')
     setSetupData(null)
+    setDeviceType('totp')
     setCopiedSecret(false)
     setupForm.reset()
     verifyForm.reset()
@@ -169,49 +180,81 @@ export function MFASetup({ isOpen, onClose }: MFASetupProps) {
 
       {step === 'verify' && setupData && (
         <div className="space-y-6">
-          <div className="text-center">
-            <QrCode className="h-12 w-12 text-primary-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-secondary-900 mb-2">
-              Scan QR Code
-            </h3>
-            <p className="text-sm text-secondary-600">
-              Scan this QR code with your authenticator app, then enter the verification code.
-            </p>
-          </div>
+          {deviceType === 'totp' ? (
+            <>
+              <div className="text-center">
+                <QrCode className="h-12 w-12 text-primary-600 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-secondary-900 mb-2">
+                  Scan QR Code
+                </h3>
+                <p className="text-sm text-secondary-600">
+                  Scan this QR code with your authenticator app, then enter the verification code.
+                </p>
+              </div>
 
-          {setupData.qr_code && (
-            <div className="flex justify-center">
-              <img
-                src={setupData.qr_code}
-                alt="QR Code"
-                className="w-48 h-48 border border-secondary-200 rounded-lg"
-              />
-            </div>
-          )}
+              {setupData.qr_code && (
+                <div className="flex justify-center">
+                  <img
+                    src={setupData.qr_code}
+                    alt="QR Code"
+                    className="w-48 h-48 border border-secondary-200 rounded-lg"
+                  />
+                </div>
+              )}
 
-          {setupData.manual_entry_key && (
-            <div className="bg-secondary-50 p-4 rounded-lg">
-              <p className="text-sm font-medium text-secondary-900 mb-2">
-                Can't scan? Enter this code manually:
-              </p>
-              <div className="flex items-center space-x-2">
-                <code className="flex-1 text-sm bg-white px-3 py-2 rounded border font-mono">
-                  {setupData.manual_entry_key}
-                </code>
+              {setupData.manual_entry_key && (
+                <div className="bg-secondary-50 p-4 rounded-lg">
+                  <p className="text-sm font-medium text-secondary-900 mb-2">
+                    Can't scan? Enter this code manually:
+                  </p>
+                  <div className="flex items-center space-x-2">
+                    <code className="flex-1 text-sm bg-white px-3 py-2 rounded border font-mono">
+                      {setupData.manual_entry_key}
+                    </code>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCopySecret}
+                    >
+                      {copiedSecret ? (
+                        <Check className="h-4 w-4" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="text-center">
+                <Smartphone className="h-12 w-12 text-primary-600 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-secondary-900 mb-2">
+                  Enter SMS Code
+                </h3>
+                <p className="text-sm text-secondary-600">
+                  We've sent a verification code to {setupData.phone_number}. Enter it below to complete setup.
+                </p>
+              </div>
+
+              <div className="bg-info-50 border border-info-200 rounded-lg p-4">
+                <h4 className="font-medium text-info-800 mb-2">Didn't receive the code?</h4>
+                <p className="text-sm text-info-700 mb-3">
+                  Check your messages or wait a moment for the SMS to arrive.
+                </p>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleCopySecret}
+                  onClick={() => resendSMSOTP()}
+                  leftIcon={<Smartphone className="h-4 w-4" />}
                 >
-                  {copiedSecret ? (
-                    <Check className="h-4 w-4" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
+                  Resend SMS Code
                 </Button>
               </div>
-            </div>
+            </>
           )}
 
           <form onSubmit={verifyForm.handleSubmit(onVerify)} className="space-y-4">

@@ -234,6 +234,72 @@ export function useAuth() {
     },
   })
 
+  // SMS MFA mutations for setup
+  const resendSMSOTPMutation = useMutation({
+    mutationFn: () => authService.resendSMSOTP(),
+    onSuccess: () => {
+      showSuccess('SMS code sent', 'A new verification code has been sent to your phone.')
+    },
+    onError: (error: any) => {
+      showError('Failed to send SMS code', error.message)
+    },
+  })
+
+  const verifySMSMFASetupMutation = useMutation({
+    mutationFn: (data: { otp_code: string; device_id?: string }) => authService.verifySMSMFA(data),
+    onSuccess: (response) => {
+      showSuccess('MFA enabled!', 'SMS multi-factor authentication has been enabled for your account.')
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+      queryClient.invalidateQueries({ queryKey: ['user', 'mfaDevices'] })
+      // Refresh user data to update MFA status
+      storeRefreshUser()
+    },
+    onError: (error: any) => {
+      showError('Failed to verify SMS code', error.message)
+    },
+  })
+
+  // MFA Login mutations (for login flow)
+  const sendSMSMFACodeMutation = useMutation({
+    mutationFn: (deviceId: string) => authService.sendSMSMFACode(deviceId),
+    onSuccess: () => {
+      showSuccess('SMS code sent', 'A verification code has been sent to your phone.')
+    },
+    onError: (error: any) => {
+      showError('Failed to send SMS code', error.message)
+    },
+  })
+
+  const verifyMFALoginMutation = useMutation({
+    mutationFn: (data: { otp_code: string; device_id?: string }) => authService.verifyMFALogin(data),
+    onSuccess: (response) => {
+      showSuccess('Login successful', 'You have been signed in successfully.')
+      // Update token if provided
+      if (response.token && user) {
+        setUser(user, response.token)
+      }
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+    },
+    onError: (error: any) => {
+      showError('MFA verification failed', error.message)
+    },
+  })
+
+  const verifyBackupCodeMutation = useMutation({
+    mutationFn: (data: { backup_code: string }) => authService.verifyBackupCode(data),
+    onSuccess: (response) => {
+      showSuccess('Login successful', 'You have been signed in with backup code.')
+      // Update token if provided
+      if (response.token && user) {
+        setUser(user, response.token)
+      }
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+    },
+    onError: (error: any) => {
+      showError('Backup code verification failed', error.message)
+    },
+  })
+
   // Invitations query
   const {
     data: invitations,
@@ -334,6 +400,13 @@ export function useAuth() {
     setupMFA: setupMFAMutation.mutateAsync,
     verifyMFASetup: verifyMFASetupMutation.mutateAsync,
     disableMFA: disableMFAMutation.mutate,
+    resendSMSOTP: resendSMSOTPMutation.mutate,
+    verifySMSMFASetup: verifySMSMFASetupMutation.mutateAsync,
+    
+    // MFA Login
+    sendSMSMFACode: sendSMSMFACodeMutation.mutate,
+    verifyMFALogin: verifyMFALoginMutation.mutateAsync,
+    verifyBackupCode: verifyBackupCodeMutation.mutateAsync,
     
     // Team management
     invitations,
@@ -351,7 +424,15 @@ export function useAuth() {
     isEmailVerificationLoading: emailVerificationMutation.isPending || resendVerificationMutation.isPending,
     isProfileUpdateLoading: updateProfileMutation.isPending,
     isSessionActionLoading: revokeSessionMutation.isPending || revokeAllSessionsMutation.isPending,
-    isMFAActionLoading: setupMFAMutation.isPending || verifyMFASetupMutation.isPending || disableMFAMutation.isPending,
+    isMFAActionLoading: 
+      setupMFAMutation.isPending || 
+      verifyMFASetupMutation.isPending || 
+      disableMFAMutation.isPending ||
+      resendSMSOTPMutation.isPending ||
+      verifySMSMFASetupMutation.isPending ||
+      sendSMSMFACodeMutation.isPending ||
+      verifyMFALoginMutation.isPending ||
+      verifyBackupCodeMutation.isPending,
     isInvitationActionLoading: createInvitationMutation.isPending || respondToInvitationMutation.isPending,
   }
 }

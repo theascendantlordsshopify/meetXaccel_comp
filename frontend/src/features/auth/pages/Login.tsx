@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/Input'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Card, CardContent } from '@/components/ui/Card'
 import { SSOLogin } from '@/features/auth/components/SSOLogin'
+import { MFALoginPrompt } from '@/features/auth/components/MFALoginPrompt'
 import { useAuth } from '@/hooks/useAuth'
 import { useToggle } from '@/hooks/useToggle'
 import { ROUTES } from '@/constants/routes'
@@ -16,6 +17,8 @@ import { loginSchema, type LoginFormData } from '@/types/forms'
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [showSSOModal, { toggle: toggleSSOModal }] = useToggle()
+  const [showMFAPrompt, { toggle: toggleMFAPrompt }] = useToggle()
+  const [pendingMFAUser, setPendingMFAUser] = useState<any>(null)
   const { login, isLoginLoading, error } = useAuth()
 
   const {
@@ -31,6 +34,29 @@ export default function Login() {
 
   const onSubmit = (data: LoginFormData) => {
     login(data.email, data.password, data.remember_me)
+      .then((response: any) => {
+        // Check if MFA is required
+        if (response?.user?.is_mfa_enabled && !response?.mfa_verified) {
+          setPendingMFAUser(response.user)
+          toggleMFAPrompt()
+        }
+        // If MFA is not required or already verified, navigation will be handled by the auth store
+      })
+      .catch(() => {
+        // Error handling is done in the hook
+      })
+  }
+
+  const handleMFASuccess = () => {
+    setPendingMFAUser(null)
+    toggleMFAPrompt()
+    // Navigation to dashboard will be handled by the auth store
+  }
+
+  const handleMFACancel = () => {
+    setPendingMFAUser(null)
+    toggleMFAPrompt()
+    // User remains on login page
   }
 
   return (
@@ -177,6 +203,13 @@ export default function Login() {
 
       {/* SSO Login Modal */}
       <SSOLogin isOpen={showSSOModal} onClose={toggleSSOModal} />
+
+      {/* MFA Login Prompt */}
+      <MFALoginPrompt 
+        isOpen={showMFAPrompt} 
+        onClose={handleMFACancel}
+        onSuccess={handleMFASuccess}
+      />
     </div>
   )
 }

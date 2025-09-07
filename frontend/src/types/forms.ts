@@ -292,6 +292,11 @@ export const mfaVerificationSchema = z.object({
   device_id: z.string().optional(),
 })
 
+// Backup code verification schema
+export const backupCodeSchema = z.object({
+  backup_code: z.string().min(1, 'Backup code is required'),
+})
+
 // Team Management Forms
 export const invitationSchema = z.object({
   invited_email: z.string().email('Please enter a valid email address'),
@@ -340,6 +345,7 @@ export type ProfileFormData = z.infer<typeof profileSchema>
 export type WebhookIntegrationFormData = z.infer<typeof webhookIntegrationSchema>
 export type MFASetupFormData = z.infer<typeof mfaSetupSchema>
 export type MFAVerificationFormData = z.infer<typeof mfaVerificationSchema>
+export type BackupCodeFormData = z.infer<typeof backupCodeSchema>
 export type InvitationFormData = z.infer<typeof invitationSchema>
 export type InvitationResponseFormData = z.infer<typeof invitationResponseSchema>
 export type ContactFormData = z.infer<typeof contactSchema>
