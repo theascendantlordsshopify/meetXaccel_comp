@@ -162,7 +162,6 @@ export function MFASetup({ isOpen, onClose }: MFASetupProps) {
                 type="tel"
                 label="Phone number"
                 placeholder="+1 (555) 123-4567"
-                error={setupForm.formState.errors.phone_number?.message}
               />
             )}
           </div>

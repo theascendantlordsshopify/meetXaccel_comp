@@ -3,31 +3,17 @@ import { authService } from '@/services/auth'
 import { authStore } from '@/stores/authStore'
 import { useUI } from '@/stores/uiStore'
 import type {
-  LoginRequest,
   RegisterRequest,
   ChangePasswordRequest,
   PasswordResetRequest,
   PasswordResetConfirmRequest,
-  EmailVerificationRequest,
-  User,
   Profile,
-  UserSession,
-  MFADevice,
-  Invitation,
 } from '@/types'
 
 export function useAuth() {
   const queryClient = useQueryClient()
   const { showSuccess, showError } = useUI()
 
-  // SSO Sessions
-  ssoSessions,
-  ssoSessionsLoading,
-  ssoSessionsError,
-  revokeSSOSession: revokeSSOSessionMutation.mutate,
-  ssoLogout: ssoLogoutMutation.mutate,
-  handleSSOCallback: ssoCallbackMutation.mutateAsync,
-  
   // Get auth state from store
   const {
     user,
@@ -42,8 +28,6 @@ export function useAuth() {
     updateProfile: storeUpdateProfile,
     refreshUser: storeRefreshUser,
     clearError,
-    setLoading,
-    setError,
   } = authStore()
 
   // Login mutation

@@ -120,7 +120,8 @@ export default function Login() {
 
               <div className="flex items-center justify-between">
                 <Checkbox
-                  {...register('remember_me')}
+                  checked={watch('remember_me')}
+                  onChange={(checked) => setValue('remember_me', checked)}
                   label="Remember me"
                 />
 

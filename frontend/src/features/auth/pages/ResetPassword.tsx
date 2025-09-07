@@ -15,7 +15,7 @@ export default function ResetPassword() {
   const token = searchParams.get('token')
   const [showPassword, setShowPassword] = useState(false)
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
-  const { confirmPasswordReset, isPasswordResetLoading, error, clearError } = useAuth()
+  const { confirmPasswordReset, isPasswordResetLoading, clearError } = useAuth()
 
   const {
     register,

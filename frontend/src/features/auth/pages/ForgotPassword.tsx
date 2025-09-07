@@ -11,7 +11,7 @@ import { ROUTES } from '@/constants/routes'
 import { passwordResetRequestSchema, type PasswordResetRequestFormData } from '@/types/forms'
 
 export default function ForgotPassword() {
-  const { requestPasswordReset, isPasswordResetLoading, error, clearError } = useAuth()
+  const { requestPasswordReset, isPasswordResetLoading, clearError } = useAuth()
 
   const {
     register,

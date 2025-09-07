@@ -108,13 +108,13 @@ export default function NotificationTemplates() {
   }
 
   const onSubmitCreate = (data: NotificationTemplateFormData) => {
-    createNotificationTemplate(data)
+    createNotificationTemplate(data as any)
     toggleCreateModal()
   }
 
   const onSubmitEdit = (data: NotificationTemplateFormData) => {
     if (selectedTemplate) {
-      updateNotificationTemplate({ id: selectedTemplate.id, data })
+      updateNotificationTemplate({ id: selectedTemplate.id, data: data as any })
       toggleEditModal()
     }
   }

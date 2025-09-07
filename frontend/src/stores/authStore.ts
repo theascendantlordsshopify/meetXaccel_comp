@@ -209,7 +209,17 @@ export const useAuth = () => {
     clearError,
     setLoading,
     setError,
-    setUser,
+    setUser: (user: User, token: string) => {
+      // Set auth token for future requests
+      setAuthToken(token)
+
+      set({
+        user,
+        token,
+        isAuthenticated: true,
+        error: null,
+      })
+    },
     // Computed values
     isOrganizer: user?.is_organizer || false,
     isEmailVerified: user?.is_email_verified || false,
