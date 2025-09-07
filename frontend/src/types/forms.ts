@@ -307,18 +307,28 @@ export const invitationSchema = z.object({
 export const invitationResponseSchema = z.object({
   token: z.string().min(1, 'Token is required'),
   action: z.enum(['accept', 'decline']),
-  first_name: z.string().min(1, 'First name is required').optional(),
-  last_name: z.string().min(1, 'Last name is required').optional(),
+  first_name: z.string().optional(),
+  last_name: z.string().optional(),
   password: z.string().min(8, 'Password must be at least 8 characters').optional(),
   password_confirm: z.string().optional(),
 }).refine(data => {
-  if (data.action === 'accept' && data.password && data.password !== data.password_confirm) {
+  // Only validate password match if both passwords are provided
+  if (data.password && data.password_confirm && data.password !== data.password_confirm) {
     return false
   }
   return true
 }, {
   message: 'Passwords do not match',
   path: ['password_confirm'],
+}).refine(data => {
+  // If action is accept and we have password fields, then first_name and last_name are required
+  if (data.action === 'accept' && data.password) {
+    return !!(data.first_name && data.last_name)
+  }
+  return true
+}, {
+  message: 'First name and last name are required for new accounts',
+  path: ['first_name'],
 })
 
 // Form data types (inferred from schemas)

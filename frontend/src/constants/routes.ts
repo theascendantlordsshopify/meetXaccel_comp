@@ -2,6 +2,7 @@ export const ROUTES = {
   // Authentication
   LOGIN: '/login',
   REGISTER: '/register',
+  INVITATION_RESPONSE: '/invitation',
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
   VERIFY_EMAIL: '/verify-email',

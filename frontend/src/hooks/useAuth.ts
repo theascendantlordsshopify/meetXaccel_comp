@@ -357,6 +357,14 @@ export function useAuth() {
     },
   })
 
+  // Check invitation mutation
+  const checkInvitationMutation = useMutation({
+    mutationFn: (token: string) => authService.checkInvitation(token),
+    onError: (error: any) => {
+      showError('Failed to check invitation', error.message)
+    },
+  })
+
   // SSO Sessions query
   const {
     data: ssoSessions,
@@ -485,6 +493,7 @@ export function useAuth() {
     invitationsError,
     createInvitation: createInvitationMutation.mutate,
     respondToInvitation: respondToInvitationMutation.mutate,
+    checkInvitation: checkInvitationMutation.mutateAsync,
     
     // Loading states
     isLoginLoading: loginMutation.isPending,
@@ -504,7 +513,10 @@ export function useAuth() {
       sendSMSMFACodeMutation.isPending ||
       verifyMFALoginMutation.isPending ||
       verifyBackupCodeMutation.isPending,
-    isInvitationActionLoading: createInvitationMutation.isPending || respondToInvitationMutation.isPending,
+    isInvitationActionLoading: 
+      createInvitationMutation.isPending || 
+      respondToInvitationMutation.isPending || 
+      checkInvitationMutation.isPending,
     isSSOActionLoading: 
       revokeSSOSessionMutation.isPending || 
       ssoLogoutMutation.isPending || 

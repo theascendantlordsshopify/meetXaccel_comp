@@ -12,6 +12,7 @@ import { CACHE_DURATION, STALE_TIME, ENABLE_DEBUG } from '@/constants'
 const Dashboard = React.lazy(() => import('@/features/dashboard/pages/Dashboard'))
 const Login = React.lazy(() => import('@/features/auth/pages/Login'))
 const Register = React.lazy(() => import('@/features/auth/pages/Register'))
+const InvitationResponse = React.lazy(() => import('@/features/auth/pages/InvitationResponse'))
 const EventTypes = React.lazy(() => import('@/features/events/pages/EventTypes'))
 const Bookings = React.lazy(() => import('@/features/events/pages/Bookings'))
 const Availability = React.lazy(() => import('@/features/availability/pages/Availability'))
@@ -119,6 +120,14 @@ function App() {
                 element={
                   <PublicRoute>
                     <Register />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/invitation"
+                element={
+                  <PublicRoute>
+                    <InvitationResponse />
                   </PublicRoute>
                 }
               />

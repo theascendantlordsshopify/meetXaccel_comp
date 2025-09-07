@@ -143,6 +143,20 @@ export const authService = {
   }> =>
     apiClient.post('/users/invitations/respond/', data),
 
+  // Check invitation details and user existence
+  checkInvitation: (token: string): Promise<{
+    invitation: {
+      id: string
+      invited_email: string
+      role_name: string
+      invited_by_name: string
+      message?: string
+      expires_at: string
+    }
+    user_exists: boolean
+  }> =>
+    apiClient.get(`/users/invitations/check/?token=${token}`),
+
   // Roles & Permissions
   getPermissions: (): Promise<any[]> =>
     apiClient.get('/users/permissions/'),
