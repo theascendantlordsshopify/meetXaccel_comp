@@ -436,7 +436,8 @@ export function useAuth() {
       ) || false,
     
     // Actions
-    login: loginMutation.mutate,
+    login: (data: { email: string; password: string; remember_me?: boolean }) => 
+      loginMutation.mutateAsync(data),
     register: registerMutation.mutate,
     logout: logoutMutation.mutate,
     setUser,

@@ -58,6 +58,7 @@ export default function NotificationTemplates() {
     register,
     handleSubmit,
     watch,
+    setValue,
     reset,
     formState: { errors },
   } = useForm<NotificationTemplateFormData>({
