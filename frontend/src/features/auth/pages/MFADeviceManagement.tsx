@@ -118,6 +118,18 @@ export default function MFADeviceManagement() {
           { label: 'Security', href: '/dashboard/security' },
           { label: 'MFA', current: true },
         ]}
+        action={
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.location.href = '/dashboard/security/sso'}
+              leftIcon={<Shield className="h-4 w-4" />}
+            >
+              SSO Sessions
+            </Button>
+          </div>
+        }
       />
 
       <Container>

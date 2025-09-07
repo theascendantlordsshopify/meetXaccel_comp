@@ -54,6 +54,7 @@ export const ROUTES = {
   PROFILE: '/dashboard/profile',
   ACCOUNT: '/dashboard/account',
   SECURITY: '/dashboard/security',
+  SSO_SESSIONS: '/dashboard/security/sso',
   BILLING: '/dashboard/billing',
   TEAM: '/dashboard/team',
   

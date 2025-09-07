@@ -37,24 +37,8 @@ export function SSOLogin({ isOpen, onClose }: SSOLoginProps) {
   const onDiscovery = async (data: SSODiscoveryForm) => {
     setIsLoading(true)
     try {
-      // TODO: Implement SSO discovery API call
-      // const response = await authService.ssoDiscovery(data.domain)
-      
-      // Mock data for now
-      const mockProviders: SSOProvider[] = [
-        {
-          type: 'saml',
-          organization: 'Acme Corporation',
-          domain: data.domain,
-        },
-        {
-          type: 'oidc',
-          organization: 'Acme Corporation (OIDC)',
-          domain: data.domain,
-        },
-      ]
-      
-      setProviders(mockProviders)
+      const response = await authService.ssoDiscovery(data.domain)
+      setProviders(response.providers)
       setStep('providers')
     } catch (error) {
       console.error('SSO discovery failed:', error)
@@ -66,15 +50,14 @@ export function SSOLogin({ isOpen, onClose }: SSOLoginProps) {
   const onSelectProvider = async (provider: SSOProvider) => {
     setStep('redirecting')
     try {
-      // TODO: Implement SSO initiation
-      // const response = await authService.initiatSSO({
-      //   sso_type: provider.type,
-      //   organization_domain: provider.domain,
-      //   redirect_url: window.location.origin + '/dashboard'
-      // })
-      // window.location.href = response.auth_url
+      const response = await authService.initiatSSO({
+        sso_type: provider.type,
+        organization_domain: provider.domain,
+        redirect_url: window.location.origin + '/dashboard'
+      })
       
-      console.log('Initiating SSO with provider:', provider)
+      // Redirect to the SSO provider
+      window.location.href = response.auth_url
     } catch (error) {
       console.error('SSO initiation failed:', error)
       setStep('providers')

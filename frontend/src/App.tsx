@@ -16,6 +16,8 @@ const EventTypes = React.lazy(() => import('@/features/events/pages/EventTypes')
 const Bookings = React.lazy(() => import('@/features/events/pages/Bookings'))
 const Availability = React.lazy(() => import('@/features/availability/pages/Availability'))
 const MFADeviceManagement = React.lazy(() => import('@/features/auth/pages/MFADeviceManagement'))
+const SSOCallback = React.lazy(() => import('@/features/auth/pages/SSOCallback'))
+const SSOSessionManagement = React.lazy(() => import('@/features/auth/pages/SSOSessionManagement'))
 const Integrations = React.lazy(() => import('@/features/integrations/pages/Integrations'))
 const CalendarIntegrations = React.lazy(() => import('@/features/integrations/pages/CalendarIntegrations'))
 const VideoIntegrations = React.lazy(() => import('@/features/integrations/pages/VideoIntegrations'))
@@ -121,6 +123,11 @@ function App() {
                 }
               />
 
+              {/* SSO Callback routes */}
+              <Route path="/saml/acs/" element={<SSOCallback />} />
+              <Route path="/oidc/callback/" element={<SSOCallback />} />
+              <Route path="/sso/callback/" element={<SSOCallback />} />
+
               {/* Protected routes */}
               <Route
                 path="/"
@@ -136,6 +143,7 @@ function App() {
                 <Route path={ROUTES.BOOKINGS} element={<Bookings />} />
                 <Route path={ROUTES.AVAILABILITY} element={<Availability />} />
                 <Route path={ROUTES.SECURITY} element={<MFADeviceManagement />} />
+                <Route path="/dashboard/security/sso" element={<SSOSessionManagement />} />
                 <Route path={ROUTES.INTEGRATIONS} element={<Integrations />} />
                 <Route path={ROUTES.INTEGRATIONS_CALENDAR} element={<CalendarIntegrations />} />
                 <Route path={ROUTES.INTEGRATIONS_VIDEO} element={<VideoIntegrations />} />

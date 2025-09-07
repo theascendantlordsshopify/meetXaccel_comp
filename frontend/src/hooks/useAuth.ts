@@ -19,6 +19,14 @@ import type {
 export function useAuth() {
   const queryClient = useQueryClient()
   const { showSuccess, showError } = useUI()
+
+  // SSO Sessions
+  ssoSessions,
+  ssoSessionsLoading,
+  ssoSessionsError,
+  revokeSSOSession: revokeSSOSessionMutation.mutate,
+  ssoLogout: ssoLogoutMutation.mutate,
+  handleSSOCallback: ssoCallbackMutation.mutateAsync,
   
   // Get auth state from store
   const {
@@ -349,6 +357,69 @@ export function useAuth() {
     },
   })
 
+  // SSO Sessions query
+  const {
+    data: ssoSessions,
+    isLoading: ssoSessionsLoading,
+    error: ssoSessionsError,
+  } = useQuery({
+    queryKey: ['user', 'ssoSessions'],
+    queryFn: () => authService.getSSOSessions(),
+    enabled: isAuthenticated,
+  })
+
+  // Revoke SSO session mutation
+  const revokeSSOSessionMutation = useMutation({
+    mutationFn: (sessionId: string) => authService.revokeSSOSession(sessionId),
+    onSuccess: () => {
+      showSuccess('SSO session revoked', 'The SSO session has been revoked successfully.')
+      queryClient.invalidateQueries({ queryKey: ['user', 'ssoSessions'] })
+    },
+    onError: (error: any) => {
+      showError('Failed to revoke SSO session', error.message)
+    },
+  })
+
+  // SSO logout mutation
+  const ssoLogoutMutation = useMutation({
+    mutationFn: () => authService.ssoLogout(),
+    onSuccess: (response) => {
+      showSuccess('SSO logout initiated', 'You have been signed out of all SSO providers.')
+      queryClient.invalidateQueries({ queryKey: ['user', 'ssoSessions'] })
+      
+      // Handle multiple logout URLs if needed
+      if (response.logout_urls && response.logout_urls.length > 0) {
+        // Open logout URLs in new tabs/windows for proper SLO
+        response.logout_urls.forEach((logout) => {
+          window.open(logout.url, '_blank', 'noopener,noreferrer')
+        })
+      }
+    },
+    onError: (error: any) => {
+      showError('Failed to initiate SSO logout', error.message)
+    },
+  })
+
+  // SSO callback mutation
+  const ssoCallbackMutation = useMutation({
+    mutationFn: (data: {
+      sso_type: 'saml' | 'oidc'
+      code?: string
+      state?: string
+      saml_response?: string
+      relay_state?: string
+    }) => authService.handleSSOCallback(data),
+    onSuccess: (response) => {
+      // Auto-login after successful SSO
+      setUser(response.user, response.token)
+      showSuccess('SSO login successful', 'You have been signed in successfully.')
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+    },
+    onError: (error: any) => {
+      showError('SSO authentication failed', error.message)
+    },
+  })
+
   return {
     // State
     user,
@@ -434,5 +505,9 @@ export function useAuth() {
       verifyMFALoginMutation.isPending ||
       verifyBackupCodeMutation.isPending,
     isInvitationActionLoading: createInvitationMutation.isPending || respondToInvitationMutation.isPending,
+    isSSOActionLoading: 
+      revokeSSOSessionMutation.isPending || 
+      ssoLogoutMutation.isPending || 
+      ssoCallbackMutation.isPending,
   }
 }

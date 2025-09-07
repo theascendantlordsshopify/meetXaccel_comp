@@ -211,6 +211,20 @@ export const authService = {
 
   revokeSSOSession: (sessionId: string): Promise<{ message: string }> =>
     apiClient.post(`/users/sso/sessions/${sessionId}/revoke/`),
+
+  // SSO Callback handling
+  handleSSOCallback: (data: {
+    sso_type: 'saml' | 'oidc'
+    code?: string
+    state?: string
+    saml_response?: string
+    relay_state?: string
+  }): Promise<{
+    user: User
+    token: string
+    message: string
+  }> =>
+    apiClient.post('/users/sso/callback/', data),
 }
 
 // Helper functions for auth service
